@@ -67,7 +67,7 @@ void reconnect()
   {
     Serial.print("Attempting MQTT connection...");
     // Attempt to connect
-    if (client.connect("2eb809d2-df85-4dc0-b7b3-9a021af7741a"))
+    if (client.connect("<YOUR ID CONNECTION"))
     {
       Serial.println("connected");
     }
