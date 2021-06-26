@@ -10,7 +10,7 @@
 
 #ifndef STASSID
 #define STASSID "<YOUR SSID>"
-#define STAPSK "<YOUR PASSWORD"
+#define STAPSK "<YOUR PASSWORD>"
 #endif
 
 const char *ssid = STASSID;
@@ -18,6 +18,7 @@ const char *password = STAPSK;
 // Add your MQTT Broker IP address, example:
 const char *mqtt_server = "test.mosquitto.org";
 
+const int pin_a = 0; //Seta Pino 0
 
 DHT dht(DHTPIN, DHTTYPE);
 WiFiClient espClient;           
@@ -34,6 +35,7 @@ void setup_wifi();
 void setup()
 {
   Serial.begin(115200);
+  pinMode(pin_a, INPUT);
   setup_wifi();
   client.setServer(mqtt_server, 1883);
 }
@@ -67,7 +69,7 @@ void reconnect()
   {
     Serial.print("Attempting MQTT connection...");
     // Attempt to connect
-    if (client.connect("<YOUR ID CONNECTION"))
+    if (client.connect("<YOUR ID CONNECTION>"))
     {
       Serial.println("connected");
     }
@@ -92,10 +94,17 @@ void loop()
   // Read temperature as Celsius (the default)
   float t = dht.readTemperature();
 
+  int val_a = analogRead(pin_a);
+
   // Check if any reads failed and exit early (to try again).
   if (isnan(h) || isnan(t))
   {
     Serial.println(F("Failed to read from DHT sensor!"));
+    return;
+  }
+  if (isnan(val_a))
+  {
+    Serial.println(F("Failed to read from RAIN sensor!"));
     return;
   }
 
@@ -118,7 +127,7 @@ void loop()
   
   long now = millis();
   
-  if (now - lastMsg > 5000)
+  if (now - lastMsg > 60000)
   {
     lastMsg = now;
 
@@ -142,5 +151,11 @@ void loop()
     Serial.print("Compute heat index: ");
     Serial.println(hic);
     client.publish("<YOUR MQTT PORT>", hicString);
+    
+    char rainString[8];
+    dtostrf(val_a, 1, 2, rainString);
+    Serial.print("Rain: ");
+    Serial.println(val_a);
+    client.publish("<YOUR MQTT PORT>", rainString);
   }
 }
